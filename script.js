@@ -17,7 +17,8 @@ const restartBtn = document.getElementById('restartBtn');
 const calibrationStatus = document.getElementById('calibrationStatus');
 const video = document.getElementById('webcam');
 
-const GRAVITY = 0.375;
+const isMobile = window.innerWidth <= 520 || 'ontouchstart' in window;
+const GRAVITY = isMobile ? 0.25 : 0.375;
 const UPWARD_FORCE = -8.0;
 const BIRD_X = W * 0.25;
 const BIRD_RADIUS = 18;
