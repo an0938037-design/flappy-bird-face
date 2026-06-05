@@ -20,6 +20,9 @@ const video = document.getElementById('webcam');
 const isMobile = window.innerWidth <= 520 || 'ontouchstart' in window;
 const GRAVITY = isMobile ? 0.25 : 0.375;
 const UPWARD_FORCE = isMobile ? -5.6 : -8.0;
+const CAM_UPWARD = isMobile ? -3.5 : -8.0;
+const CAM_GAP_BASE = isMobile ? 168 : 170;
+const CAM_GAP_MIN = isMobile ? 145 : 150;
 const BIRD_X = W * 0.25;
 const BIRD_RADIUS = 18;
 const OBSTACLE_WIDTH = 60;
@@ -52,10 +55,12 @@ let readyCountdown = 3;
 let readyStartTime = 0;
 
 function createObstacle() {
-  const gapY = 100 + Math.random() * (H - GAP_SIZE_BASE - 200);
+  const baseGap = !touchMode && isMobile ? CAM_GAP_BASE : GAP_SIZE_BASE;
+  const minGap = !touchMode && isMobile ? CAM_GAP_MIN : GAP_SIZE_MIN;
+  const gapY = 100 + Math.random() * (H - baseGap - 200);
   const currentGap = Math.max(
-    GAP_SIZE_MIN,
-    GAP_SIZE_BASE - Math.min(score * 0.8, 20)
+    minGap,
+    baseGap - Math.min(score * 0.8, 20)
   );
   return { x: W, gapY, gapSize: currentGap, passed: false };
 }
@@ -365,11 +370,12 @@ function checkHandGesture() {
     bird.vy += GRAVITY;
     return;
   }
+  const upForce = isMobile ? CAM_UPWARD : UPWARD_FORCE;
   if (!handDetected || !palmTracking) {
     bird.vy += GRAVITY;
     return;
   }
-  bird.vy = UPWARD_FORCE;
+  bird.vy = upForce;
 }
 
 function startGame(mode) {
