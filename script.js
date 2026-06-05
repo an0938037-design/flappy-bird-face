@@ -30,7 +30,6 @@ const OBSTACLE_SPEED_MAX = isMobile ? 5.0 : 7.0;
 const SPEED_INCREMENT = 0.04;
 const SPAWN_INTERVAL_INITIAL = isMobile ? 2400 : 1900;
 const SPAWN_INTERVAL_MIN = isMobile ? 1500 : 1100;
-const cameraDisabled = isMobile;
 
 let bird = { x: BIRD_X, y: H / 2, vy: 0 };
 let obstacles = [];
@@ -303,7 +302,7 @@ async function initHandTracking() {
 
     hands.setOptions({
       maxNumHands: 1,
-      modelComplexity: 1,
+      modelComplexity: isMobile ? 0 : 1,
       minDetectionConfidence: 0.6,
       minTrackingConfidence: 0.5,
     });
@@ -461,7 +460,10 @@ function render() {
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#fff';
     ctx.font = '24px Arial';
-    ctx.fillText(touchMode ? 'Tap the screen to fly!' : 'Show your palm to the camera!', W / 2, H / 2 + 60);
+    const isCameraMode = !touchMode;
+    ctx.fillText(isCameraMode
+      ? (isMobile ? 'Open palm to fly!' : 'Show your palm to the camera!')
+      : 'Tap the screen to fly!', W / 2, H / 2 + 60);
     return;
   }
 
@@ -485,7 +487,6 @@ function gameLoop(timestamp) {
 }
 
 document.getElementById('cameraBtn').addEventListener('click', () => {
-  if (cameraDisabled) return;
   initHandTracking();
 });
 document.getElementById('touchBtn').addEventListener('click', () => startGame('touch'));
@@ -516,11 +517,6 @@ canvas.addEventListener('touchstart', (e) => {
 highScoreEl.textContent = highScore;
 gameState = 'menu';
 startScreen.style.display = 'flex';
-
-if (cameraDisabled) {
-  document.getElementById('cameraBtn').style.display = 'none';
-  document.querySelector('.subtitle').textContent = 'Touch to play!';
-}
 calibrationStatus.textContent = 'Choose your play mode!';
 document.querySelector('.webcam-wrapper').style.display = 'none';
 requestAnimationFrame(gameLoop);
