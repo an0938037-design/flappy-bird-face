@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flappy Bird - Hand Tracking</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+
+    <div class="webcam-wrapper">
+      <video id="webcam" playsinline></video>
+      <div class="webcam-label">You</div>
+    </div>
+
+    <div id="scoreDisplay">
+      <span id="score">0</span>
+    </div>
+    <div id="highScoreDisplay">
+      Best: <span id="highScore">0</span>
+    </div>
+
+    <div id="startScreen" class="overlay">
+      <div class="overlay-content">
+        <h1 class="title">Flappy Bird</h1>
+        <p class="subtitle">Choose how to play!</p>
+        <div id="calibrationStatus">Loading...</div>
+        <div class="mode-buttons">
+          <button id="cameraBtn" class="mode-btn">&#x1F4F7; Camera Mode</button>
+          <button id="touchBtn" class="mode-btn">&#x1F446; Touch Mode</button>
+        </div>
+        <button id="startBtn" style="display:none">Start Game</button>
+      </div>
+    </div>
+
+    <div id="gameOverScreen" class="overlay" style="display:none">
+      <div class="overlay-content">
+        <h1 class="title game-over-title">Game Over</h1>
+        <div class="scores">
+          <div class="score-item">
+            <span class="score-label">Score</span>
+            <span class="score-value" id="finalScore">0</span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Best</span>
+            <span class="score-value" id="finalHighScore">0</span>
+          </div>
+        </div>
+        <button id="restartBtn">Play Again</button>
+      </div>
+    </div>
+
+    <div id="faceIndicator">
+      <span class="dot"></span>
+      <span class="label">Hand Tracking</span>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="script.js"></script>
+</body>
+</html>
