@@ -17,7 +17,7 @@ const restartBtn = document.getElementById('restartBtn');
 const calibrationStatus = document.getElementById('calibrationStatus');
 const video = document.getElementById('webcam');
 
-const GRAVITY = 0.5;
+const GRAVITY = 0.375;
 const UPWARD_FORCE = -8.0;
 const BIRD_X = W * 0.25;
 const BIRD_RADIUS = 18;
@@ -47,7 +47,7 @@ let touchMode = false;
 let handDetected = false;
 let palmTracking = false;
 
-let readyCountdown = 5;
+let readyCountdown = 3;
 let readyStartTime = 0;
 
 function createObstacle() {
@@ -402,7 +402,7 @@ function endGame() {
 function update() {
   if (gameState === 'ready') {
     const elapsed = (Date.now() - readyStartTime) / 1000;
-    readyCountdown = 5 - Math.floor(elapsed);
+    readyCountdown = 3 - Math.floor(elapsed);
     if (readyCountdown <= 0) {
       gameState = 'playing';
     }
