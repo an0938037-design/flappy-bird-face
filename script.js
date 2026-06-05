@@ -291,7 +291,11 @@ function countExtendedFingers(landmarks) {
 async function initHandTracking() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user' }
+      video: {
+        facingMode: 'user',
+        width: { ideal: isMobile ? 320 : 640 },
+        height: { ideal: isMobile ? 240 : 480 }
+      }
     });
     video.srcObject = stream;
 
@@ -303,11 +307,15 @@ async function initHandTracking() {
     hands.setOptions({
       maxNumHands: 1,
       modelComplexity: isMobile ? 0 : 1,
-      minDetectionConfidence: 0.6,
+      minDetectionConfidence: 0.5,
       minTrackingConfidence: 0.5,
     });
 
+    let detectFrameSkip = 0;
+
     hands.onResults((results) => {
+      detectFrameSkip++;
+      if (isMobile && detectFrameSkip % 2 === 0) return;
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
         const landmarks = results.multiHandLandmarks[0];
         handDetected = true;
