@@ -232,11 +232,22 @@ bgNightImg.onload = function(){ this._fallback = false; };
 
 // ===== CHAPTER 1 ASSETS =====
 const bgTileImgs = [];
-for (let i = 1; i <= 3; i++) {
+const bgPixelData = [null, null, null];
+for (let i = 0; i < 3; i++) {
   const img = new Image();
-  img.src = 'assets/backgrounds/ms' + i + '.png';
+  img.src = 'assets/backgrounds/ms' + (i + 1) + '.png';
   img._fallback = true;
-  img.onload = function(){ this._fallback = false; };
+  img._bgIdx = i;
+  img.onload = function(){
+    this._fallback = false;
+    const c = document.createElement('canvas');
+    c.width = this.naturalWidth;
+    c.height = this.naturalHeight;
+    const cx = c.getContext('2d');
+    cx.drawImage(this, 0, 0);
+    const d = cx.getImageData(0, 0, c.width, c.height);
+    bgPixelData[this._bgIdx] = { w: c.width, h: c.height, pixels: d.data };
+  };
   bgTileImgs.push(img);
 }
 
@@ -569,7 +580,7 @@ function updatePlaying(dt) {
     for (const tile of bgTiles) {
       if (tile.hasOb && !tile.obAdded && tile.x + BG_TILE_W < CFG.GA && tile.x + BG_TILE_W > 0) {
         const ox = tile.x + BG_TILE_W - Math.random() * (CH1_OB_W + BG_TILE_W * 0.3);
-        const gapY = 80 + Math.random() * (CH1_OB_H - CH1_GAP_H - 160);
+        const gapY = 80 + Math.random() * (CFG.CH - CFG.GROUND_H - (CFG.CH - CH1_OB_H) - CH1_GAP_H - 80);
         obstacles.push({
           x: ox,
           y: CFG.CH - CH1_OB_H,
@@ -590,7 +601,7 @@ function updatePlaying(dt) {
       const last = bgTiles[bgTiles.length - 1];
       if (last.x < CFG.GA) {
         const bgIdx = Math.floor(Math.random() * bgTileImgs.length);
-        const hasOb = Math.random() < 0.35;
+        const hasOb = Math.random() < 0.65;
         bgTiles.push({
           x: last.x + BG_TILE_W,
           bgImg: bgTileImgs[bgIdx],
@@ -620,16 +631,41 @@ function updatePlaying(dt) {
 
   // collision
   const GRND = CFG.CH - CFG.GROUND_H;
+  // background pixel collision (chapter 1)
+  if (chapter === 1) {
+    const pts = [];
+    for (let a = 0; a < 12; a++) {
+      const ang = a * Math.PI / 6;
+      pts.push({ x: bird.x + Math.cos(ang) * CFG.BR, y: bird.y + Math.sin(ang) * CFG.BR });
+    }
+    for (const p of pts) {
+      if (p.y < 0 || p.y >= GRND) continue;
+      for (const tile of bgTiles) {
+        if (p.x >= tile.x && p.x < tile.x + BG_TILE_W) {
+          const data = bgPixelData[tile.bgIdx];
+          if (!data) continue;
+          const iw = data.w, ih = data.h;
+          const ix = Math.round((p.x - tile.x) * iw / BG_TILE_W);
+          const iy = Math.round(p.y * ih / BG_TILE_H);
+          if (ix >= 0 && ix < iw && iy >= 0 && iy < ih) {
+            const idx = (iy * iw + ix) * 4;
+            const r = data.pixels[idx], g = data.pixels[idx + 1], b = data.pixels[idx + 2];
+            const isSky = (r > 100 && r < 200 && g > 150 && g < 250 && b > 180 && b < 255) ||
+                          (r > 200 && g > 220 && b > 230);
+            if (!isSky) { endGame(); return; }
+          }
+          break;
+        }
+      }
+    }
+  }
   for (const obs of obstacles) {
     const cx = bird.x, cy = bird.y, cr = CFG.BR;
     if (obs.gapY !== undefined) {
       const tp = { x: obs.x, y: obs.y, w: obs.w, h: obs.gapY };
-      const bp = { x: obs.x, y: obs.y + obs.gapY + obs.gapH, w: obs.w, h: obs.h - obs.gapY - obs.gapH };
-      for (const r of [tp, bp]) {
-        const nx = Math.max(r.x, Math.min(cx, r.x + r.w));
-        const ny = Math.max(r.y, Math.min(cy, r.y + r.h));
-        if ((cx - nx) * (cx - nx) + (cy - ny) * (cy - ny) < cr * cr) { endGame(); return; }
-      }
+      const nx = Math.max(tp.x, Math.min(cx, tp.x + tp.w));
+      const ny = Math.max(tp.y, Math.min(cy, tp.y + tp.h));
+      if ((cx - nx) * (cx - nx) + (cy - ny) * (cy - ny) < cr * cr) { endGame(); return; }
     } else {
       const rx = obs.x, ry = obs.y, rw = obs.w, rh = obs.h;
       const nx = Math.max(rx, Math.min(cx, rx + rw));
@@ -779,28 +815,19 @@ function drawObstacles() {
     const cluster = obs.cluster;
     if (obs.gapY !== undefined) {
       const tp = { x: obs.x, y: obs.y, w: obs.w, h: obs.gapY };
-      const bp = { x: obs.x, y: obs.y + obs.gapY + obs.gapH, w: obs.w, h: obs.h - obs.gapY - obs.gapH };
       const imgOk = cluster && cluster.img && !cluster.img._fallback && cluster.img.complete && cluster.img.naturalWidth > 0;
-      if (imgOk) {
+      if (imgOk && tp.h > 0) {
         const iw = cluster.img.naturalWidth, ih = cluster.img.naturalHeight;
-        const topSrcH = Math.round(tp.h * ih / obs.h);
-        const bottomSrcY = Math.round((tp.h + obs.gapH) * ih / obs.h);
-        const bottomSrcH = ih - bottomSrcY;
-        ctx.drawImage(cluster.img, 0, 0, iw, topSrcH, tp.x, tp.y, tp.w, tp.h);
-        if (bottomSrcH > 0) {
-          ctx.drawImage(cluster.img, 0, bottomSrcY, iw, bottomSrcH, bp.x, bp.y, bp.w, bp.h);
-        }
-      } else {
-        for (const r of [tp, bp]) {
-          if (r.h <= 0) continue;
-          ctx.fillStyle = '#8B5E3C';
-          ctx.fillRect(r.x, r.y, r.w, r.h);
-          ctx.fillStyle = '#5B8731';
-          ctx.fillRect(r.x, r.y, r.w, 12);
-          ctx.strokeStyle = '#333';
-          ctx.lineWidth = 3;
-          ctx.strokeRect(r.x, r.y, r.w, r.h);
-        }
+        const srcH = Math.round(tp.h * ih / obs.h);
+        ctx.drawImage(cluster.img, 0, 0, iw, srcH, tp.x, tp.y, tp.w, tp.h);
+      } else if (tp.h > 0) {
+        ctx.fillStyle = '#8B5E3C';
+        ctx.fillRect(tp.x, tp.y, tp.w, tp.h);
+        ctx.fillStyle = '#5B8731';
+        ctx.fillRect(tp.x, tp.y, tp.w, 12);
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(tp.x, tp.y, tp.w, tp.h);
       }
     } else {
       if (cluster && cluster.img && !cluster.img._fallback && cluster.img.complete && cluster.img.naturalWidth > 0) {
