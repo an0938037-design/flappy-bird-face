@@ -415,6 +415,7 @@ let shuffledClusters = [];
 let clusterImagesLoaded = false;
 let startCountdown = 3;
 let startCountdownTime = 0;
+let invincibleUntil = 0;
 
 function getMaxSpeed(chap) {
   let s = CFG.BASE_MAX_SPEED;
@@ -440,7 +441,7 @@ function generateCh1Tiles() {
   const numTiles = Math.ceil(CFG.GA / BG_TILE_W) + 4;
   for (let i = 0; i < numTiles; i++) {
     const bgIdx = Math.floor(Math.random() * bgTileImgs.length);
-    const hasOb = Math.random() < 0.35;
+    const hasOb = i === 0 ? false : Math.random() < 0.75;
     bgTiles.push({
       x: i * BG_TILE_W,
       bgImg: bgTileImgs[bgIdx],
@@ -535,6 +536,7 @@ function startGame() {
   document.querySelector('#gameOverOverlay h1').textContent = 'GAME OVER';
   document.querySelector('#gameOverOverlay h1').style.color = '#f44336';
   updateCameraMode(true);
+  invincibleUntil = Date.now() + 2000;
 }
 
 // ===== UPDATE =====
@@ -601,7 +603,7 @@ function updatePlaying(dt) {
       const last = bgTiles[bgTiles.length - 1];
       if (last.x < CFG.GA) {
         const bgIdx = Math.floor(Math.random() * bgTileImgs.length);
-        const hasOb = Math.random() < 0.65;
+        const hasOb = Math.random() < 0.75;
         bgTiles.push({
           x: last.x + BG_TILE_W,
           bgImg: bgTileImgs[bgIdx],
@@ -630,6 +632,7 @@ function updatePlaying(dt) {
   }
 
   // collision
+  if (Date.now() >= invincibleUntil) {
   const GRND = CFG.CH - CFG.GROUND_H;
   // background pixel collision (chapter 1)
   if (chapter === 1) {
@@ -675,6 +678,7 @@ function updatePlaying(dt) {
   }
   if (bird.y - CFG.BR < 0 || bird.y + CFG.BR > GRND) {
     endGame(); return;
+  }
   }
 
   // chapter end check
@@ -749,6 +753,7 @@ function updateRestCountdown(dt) {
 }
 
 function endGame() {
+  invincibleUntil = 0;
   state = State.GAME_OVER;
   if (score > highScore) {
     highScore = score;
@@ -852,6 +857,8 @@ function drawBird() {
   const bx = bird.x;
   const by = bird.y;
   const tilt = Math.max(-0.5, Math.min(0.5, bird.vy * 0.03));
+  const inv = Date.now() < invincibleUntil;
+  if (inv && Math.floor(Date.now() / 150) % 2 === 0) return;
 
   ctx.save();
   ctx.translate(bx, by);
