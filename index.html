@@ -247,9 +247,12 @@ ch1ObImg.onload = function(){ this._fallback = false; };
 
 const BG_TILE_W = 1024;
 const BG_TILE_H = CFG.CH;
+const CH1_OB_NAT_W = 819;
+const CH1_OB_NAT_H = 1287;
+const CH1_OB_NAT_GAP_Y = 819;
+const CH1_OB_NAT_GAP_H = 117;
 const CH1_OB_W = 300;
-const CH1_OB_H = 900;
-const CH1_GAP_H = 240;
+const CH1_OB_H = CH1_OB_NAT_H;
 let bgTiles = [];
 
 // ===== HIGH SCORE =====
@@ -569,14 +572,15 @@ function updatePlaying(dt) {
     for (const tile of bgTiles) {
       if (tile.hasOb && !tile.obAdded && tile.x + BG_TILE_W < CFG.GA && tile.x + BG_TILE_W > 0) {
         const ox = tile.x + BG_TILE_W - CH1_OB_W;
-        const gapY = Math.max(60, Math.random() * (CH1_OB_H - CH1_GAP_H - 120) + 60);
+        const gapY = Math.round(CH1_OB_NAT_GAP_Y * CH1_OB_H / CH1_OB_NAT_H);
+        const gapH = Math.round(CH1_OB_NAT_GAP_H * CH1_OB_H / CH1_OB_NAT_H);
         obstacles.push({
           x: ox,
           y: CFG.CH - CH1_OB_H,
           w: CH1_OB_W,
           h: CH1_OB_H,
           gapY: gapY,
-          gapH: CH1_GAP_H,
+          gapH: gapH,
           cluster: { img: ch1ObImg, idx: 0 },
           passed: false,
         });
@@ -780,13 +784,12 @@ function drawObstacles() {
     if (obs.gapY !== undefined) {
       const tp = { x: obs.x, y: obs.y, w: obs.w, h: obs.gapY };
       const bp = { x: obs.x, y: obs.y + obs.gapY + obs.gapH, w: obs.w, h: obs.h - obs.gapY - obs.gapH };
-      for (const r of [tp, bp]) {
-        if (r.h <= 0) continue;
-        if (cluster && cluster.img && !cluster.img._fallback && cluster.img.complete && cluster.img.naturalWidth > 0) {
-          const sy = r === tp ? 0 : obs.gapY + obs.gapH;
-          const sh = r === tp ? obs.gapY : obs.h - obs.gapY - obs.gapH;
-          ctx.drawImage(cluster.img, 0, sy, obs.w, sh, r.x, r.y, r.w, r.h);
-        } else {
+      const imgOk = cluster && cluster.img && !cluster.img._fallback && cluster.img.complete && cluster.img.naturalWidth > 0;
+      if (imgOk) {
+        ctx.drawImage(cluster.img, obs.x, obs.y, obs.w, obs.h);
+      } else {
+        for (const r of [tp, bp]) {
+          if (r.h <= 0) continue;
           ctx.fillStyle = '#8B5E3C';
           ctx.fillRect(r.x, r.y, r.w, r.h);
           ctx.fillStyle = '#5B8731';
