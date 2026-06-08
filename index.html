@@ -7,40 +7,40 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 body{background:#1a1a2e;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden}
-#gameContainer{position:relative;width:1600px;height:600px;border-radius:8px;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,0.5);image-rendering:pixelated}
+#gameContainer{position:relative;width:13654px;height:5120px;border-radius:68px;overflow:hidden;box-shadow:0 0 342px rgba(0,0,0,0.5);image-rendering:pixelated}
 #gameCanvas{display:block;width:100%;height:100%}
-#uiPanel{position:absolute;top:0;right:0;width:480px;height:600px;background:rgba(30,30,30,0.85);border-left:3px solid #555;z-index:5;display:flex;flex-direction:column;align-items:center;padding:12px;color:#fff;font-family:'Courier New',monospace}
-#logoArea{width:180px;height:180px;margin-top:10px;cursor:pointer;border:3px solid #888;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);position:relative;overflow:hidden}
+#uiPanel{position:absolute;top:0;right:0;width:4096px;height:5120px;background:rgba(30,30,30,0.85);border-left:26px solid #555;z-index:5;display:flex;flex-direction:column;align-items:center;padding:102px;color:#fff;font-family:'Courier New',monospace}
+#logoArea{width:1536px;height:1536px;margin-top:86px;cursor:pointer;border:26px solid #888;border-radius:68px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);position:relative;overflow:hidden}
 #logoArea img{max-width:100%;max-height:100%;image-rendering:pixelated}
-#logoArea .char-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);text-align:center;font-size:13px;padding:3px;color:#FFD700;font-weight:700}
+#logoArea .char-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);text-align:center;font-size:110px;padding:26px;color:#FFD700;font-weight:700}
 #cameraFeed{position:absolute;top:0;left:0;width:100%;height:100%;display:none;background:#000}
 #cameraFeed video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
 #cameraFeed canvas{position:absolute;top:0;left:0;width:100%;height:100%}
-.ui-title{font-size:16px;color:#FFD700;font-weight:700;text-shadow:2px 2px 0 #8B6914;margin:6px 0 3px;letter-spacing:1px;text-align:center}
-.ui-info{font-size:22px;font-weight:700;color:#fff;text-align:center}
-.ui-label{font-size:13px;color:#aaa;text-align:center;margin-top:2px}
-.ui-row{width:100%;display:flex;justify-content:space-between;padding:4px 16px}
-.ui-separator{width:90%;height:1px;background:linear-gradient(90deg,transparent,#555,transparent);margin:6px 0}
-.ui-speed-bar{width:90%;height:8px;background:#333;border-radius:4px;overflow:hidden;margin:3px 0}
-.ui-speed-fill{height:100%;background:linear-gradient(90deg,#4CAF50,#FFEB3B,#f44336);border-radius:4px;transition:width 0.3s}
+.ui-title{font-size:136px;color:#FFD700;font-weight:700;text-shadow:18px 18px 0 #8B6914;margin:52px 0 26px;letter-spacing:8px;text-align:center}
+.ui-info{font-size:188px;font-weight:700;color:#fff;text-align:center}
+.ui-label{font-size:110px;color:#aaa;text-align:center;margin-top:18px}
+.ui-row{width:100%;display:flex;justify-content:space-between;padding:34px 136px}
+.ui-separator{width:90%;height:1px;background:linear-gradient(90deg,transparent,#555,transparent);margin:52px 0}
+.ui-speed-bar{width:90%;height:68px;background:#333;border-radius:34px;overflow:hidden;margin:26px 0}
+.ui-speed-fill{height:100%;background:linear-gradient(90deg,#4CAF50,#FFEB3B,#f44336);border-radius:34px;transition:width 0.3s}
 #startOverlay{position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center}
-#startOverlay h1{font-size:52px;color:#FFD700;text-shadow:3px 3px 0 #8B6914;margin-bottom:4px;letter-spacing:2px;font-family:'Courier New',monospace}
-#startOverlay .subtitle{font-size:18px;color:#ccc;margin-bottom:16px}
-#startOverlay .cal-status{font-size:14px;color:#FFD700;margin-bottom:12px;padding:6px 14px;background:rgba(255,215,0,0.1);border-radius:8px}
-#startOverlay .controls-hint{font-size:13px;color:#999;margin-bottom:16px;text-align:center;line-height:1.6}
-#startOverlay button{background:linear-gradient(180deg,#FFD700,#FFA500);border:none;color:#333;font-size:20px;font-weight:800;padding:14px 48px;border-radius:50px;cursor:pointer;box-shadow:0 6px 20px rgba(255,165,0,0.4);text-transform:uppercase;letter-spacing:1px;margin:4px}
-#startOverlay button:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(255,165,0,0.6)}
+#startOverlay h1{font-size:444px;color:#FFD700;text-shadow:26px 26px 0 #8B6914;margin-bottom:34px;letter-spacing:12px;font-family:'Courier New',monospace}
+#startOverlay .subtitle{font-size:154px;color:#ccc;margin-bottom:136px}
+#startOverlay .cal-status{font-size:120px;color:#FFD700;margin-bottom:102px;padding:52px 120px;background:rgba(255,215,0,0.1);border-radius:68px}
+#startOverlay .controls-hint{font-size:110px;color:#999;margin-bottom:136px;text-align:center;line-height:1.6}
+#startOverlay button{background:linear-gradient(180deg,#FFD700,#FFA500);border:none;color:#333;font-size:170px;font-weight:800;padding:120px 410px;border-radius:426px;cursor:pointer;box-shadow:0 52px 170px rgba(255,165,0,0.4);text-transform:uppercase;letter-spacing:8px;margin:34px}
+#startOverlay button:hover{transform:translateY(-18px);box-shadow:0 68px 214px rgba(255,165,0,0.6)}
 #startOverlay button:active{transform:translateY(0)}
 #gameOverOverlay{position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center}
-#gameOverOverlay h1{font-size:48px;color:#f44336;text-shadow:3px 3px 0 #8B0000;margin-bottom:12px;font-family:'Courier New',monospace}
-#gameOverOverlay .final-info{font-size:22px;color:#fff;margin:6px 0}
-#gameOverOverlay button{background:linear-gradient(180deg,#FFD700,#FFA500);border:none;color:#333;font-size:20px;font-weight:800;padding:14px 48px;border-radius:50px;cursor:pointer;box-shadow:0 6px 20px rgba(255,165,0,0.4);text-transform:uppercase;letter-spacing:1px;margin-top:16px}
+#gameOverOverlay h1{font-size:410px;color:#f44336;text-shadow:26px 26px 0 #8B0000;margin-bottom:102px;font-family:'Courier New',monospace}
+#gameOverOverlay .final-info{font-size:188px;color:#fff;margin:52px 0}
+#gameOverOverlay button{background:linear-gradient(180deg,#FFD700,#FFA500);border:none;color:#333;font-size:170px;font-weight:800;padding:120px 410px;border-radius:426px;cursor:pointer;box-shadow:0 52px 170px rgba(255,165,0,0.4);text-transform:uppercase;letter-spacing:8px;margin-top:136px}
 #captureOverlay{position:absolute;top:0;left:0;z-index:10}
-#handDot{position:absolute;width:10px;height:10px;background:#ff0;border-radius:50%;border:2px solid #fff;pointer-events:none;z-index:11;display:none;transform:translate(-50%,-50%)}
-.hand-status{position:absolute;bottom:4px;right:4px;z-index:12;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.5);padding:4px 10px;border-radius:12px}
-.hand-status .dot{width:8px;height:8px;border-radius:50%;background:#f44336}
-.hand-status .dot.active{background:#4CAF50;box-shadow:0 0 6px #4CAF50}
-.hand-status .label{color:#fff;font-size:11px;font-weight:600}
+#handDot{position:absolute;width:86px;height:86px;background:#ff0;border-radius:50%;border:18px solid #fff;pointer-events:none;z-index:11;display:none;transform:translate(-50%,-50%)}
+.hand-status{position:absolute;bottom:34px;right:34px;z-index:12;display:flex;align-items:center;gap:52px;background:rgba(0,0,0,0.5);padding:34px 86px;border-radius:102px}
+.hand-status .dot{width:68px;height:68px;border-radius:50%;background:#f44336}
+.hand-status .dot.active{background:#4CAF50;box-shadow:0 0 52px #4CAF50}
+.hand-status .label{color:#fff;font-size:94px;font-weight:600}
 </style>
 </head>
 <body>
@@ -66,7 +66,7 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:center;m
 
     <div class="ui-separator"></div>
     <div class="ui-title">OBSTACLE CLUSTER</div>
-    <div class="ui-info" id="uiCluster" style="font-size:16px">-</div>
+    <div class="ui-info" id="uiCluster" style="font-size:222px">-</div>
 
     <div class="ui-separator"></div>
     <div class="ui-title">SCORE</div>
@@ -104,28 +104,28 @@ body{background:#1a1a2e;display:flex;justify-content:center;align-items:center;m
 <script>
 // ===== CONFIGURATION =====
 const CFG = {
-  CW: 1600, CH: 600,
-  GA: 1120, UP: 480,
-  PX: 150, PY: 300,
+  CW: 13654, CH: 5120,
+  GA: 9558, UP: 4096,
+  PX: 1280, PY: 2560,
   CHAPTER_COUNT: 7,
   CHAPTER_DURATION: 15,
   REST_DURATION: 6,
   TRANSITION_DURATION: 1.5,
   COUNTDOWN_DURATION: 3,
-  BASE_MAX_SPEED: 3,
+  BASE_MAX_SPEED: 25.6,
   SPEED_INCREASE: 1.3,
-  GRAVITY: 0.375,
-  UPWARD: -8.0,
-  BR: 18,
-  MARGIN_TOP: 80,
-  MARGIN_BOTTOM: 80,
-  HAND_VEL_THRESHOLD: 40,
-  STATIONARY_THRESHOLD: 3,
+  GRAVITY: 3.2,
+  UPWARD: -68.26,
+  BR: 154,
+  MARGIN_TOP: 682,
+  MARGIN_BOTTOM: 682,
+  HAND_VEL_THRESHOLD: 342,
+  STATIONARY_THRESHOLD: 26,
   STATIONARY_TIMEOUT: 1000,
   AUTO_FLAP_INTERVAL: 500,
   MA_FRAMES: 5,
-  CLUSTER_W: 80,
-  CLUSTER_H: 200,
+  CLUSTER_W: 682,
+  CLUSTER_H: 1706,
 };
 
 // ===== DOM REFS =====
@@ -228,6 +228,27 @@ const bgNightImg = new Image();
 bgNightImg.src = 'assets/backgrounds/night.png';
 bgNightImg._fallback = true;
 bgNightImg.onload = function(){ this._fallback = false; };
+
+// ===== CHAPTER 1 ASSETS =====
+const bgTileImgs = [];
+for (let i = 1; i <= 3; i++) {
+  const img = new Image();
+  img.src = 'assets/backgrounds/ms' + i + '.png';
+  img._fallback = true;
+  img.onload = function(){ this._fallback = false; };
+  bgTileImgs.push(img);
+}
+
+const ch1ObImg = new Image();
+ch1ObImg.src = 'assets/obstacles/chapter1/ob1.png';
+ch1ObImg._fallback = true;
+ch1ObImg.onload = function(){ this._fallback = false; };
+
+const BG_TILE_W = 1024;
+const BG_TILE_H = CFG.CH;
+const CH1_OB_W = 400;
+const CH1_OB_H = 512;
+let bgTiles = [];
 
 // ===== HIGH SCORE =====
 let highScore = parseInt(localStorage.getItem('mineflappyHighScore')) || 0;
@@ -401,6 +422,22 @@ function shuffleArray(arr) {
   return a;
 }
 
+function generateCh1Tiles() {
+  bgTiles = [];
+  const numTiles = Math.ceil(CFG.GA / BG_TILE_W) + 4;
+  for (let i = 0; i < numTiles; i++) {
+    const bgIdx = Math.floor(Math.random() * bgTileImgs.length);
+    const hasOb = Math.random() < 0.35;
+    bgTiles.push({
+      x: i * BG_TILE_W,
+      bgImg: bgTileImgs[bgIdx],
+      bgIdx: bgIdx,
+      hasOb: hasOb,
+      obAdded: false,
+    });
+  }
+}
+
 function loadClustersForChapter(chap) {
   const key = 'chapter' + chap;
   const clusters = clusterImages[key] || [];
@@ -460,6 +497,7 @@ function resetGame() {
   startCountdown = 3;
   gameSpeed = getMinSpeed(1);
   loadClustersForChapter(1);
+  generateCh1Tiles();
   handYHistory = [];
 }
 
@@ -522,8 +560,45 @@ function updatePlaying(dt) {
   bird.y += bird.vy;
 
   const lastX = obstacles.length > 0 ? obstacles[obstacles.length - 1].x : CFG.GA;
-  if (lastX < CFG.GA - 300) {
-    spawnObstacle();
+  if (chapter === 1) {
+    for (const tile of bgTiles) {
+      tile.x -= gameSpeed;
+    }
+    for (const tile of bgTiles) {
+      if (tile.hasOb && !tile.obAdded && tile.x + BG_TILE_W < CFG.GA && tile.x + BG_TILE_W > 0) {
+        const ox = tile.x + BG_TILE_W - CH1_OB_W;
+        obstacles.push({
+          x: ox,
+          y: CFG.CH - CH1_OB_H,
+          w: CH1_OB_W,
+          h: CH1_OB_H,
+          cluster: { img: ch1ObImg, idx: 0 },
+          passed: false,
+        });
+        tile.obAdded = true;
+      }
+    }
+    while (bgTiles.length > 0 && bgTiles[0].x + BG_TILE_W < 0) {
+      bgTiles.shift();
+    }
+    if (bgTiles.length > 0) {
+      const last = bgTiles[bgTiles.length - 1];
+      if (last.x < CFG.GA) {
+        const bgIdx = Math.floor(Math.random() * bgTileImgs.length);
+        const hasOb = Math.random() < 0.35;
+        bgTiles.push({
+          x: last.x + BG_TILE_W,
+          bgImg: bgTileImgs[bgIdx],
+          bgIdx: bgIdx,
+          hasOb: hasOb,
+          obAdded: false,
+        });
+      }
+    }
+  } else {
+    if (lastX < CFG.GA - 2560) {
+      spawnObstacle();
+    }
   }
 
   for (let i = obstacles.length - 1; i >= 0; i--) {
@@ -566,8 +641,8 @@ function updatePlaying(dt) {
       state = State.CHAPTER_TRANSITION;
       transElapsed = 0;
       const angle = Math.random() * Math.PI * 2;
-      bird._vx = Math.cos(angle) * 4;
-      bird._vy = Math.sin(angle) * 4;
+      bird._vx = Math.cos(angle) * 34;
+      bird._vy = Math.sin(angle) * 34;
     }
   }
 }
@@ -576,13 +651,14 @@ function updateTransition(dt) {
   transElapsed += dt;
   bird.x += bird._vx || 0;
   bird.y += bird._vy || 0;
-  bird.x = Math.max(50, Math.min(CFG.GA - 50, bird.x));
-  bird.y = Math.max(30, Math.min(CFG.CH - 30, bird.y));
+  bird.x = Math.max(426, Math.min(CFG.GA - 426, bird.x));
+  bird.y = Math.max(256, Math.min(CFG.CH - 256, bird.y));
 
   if (transElapsed >= CFG.TRANSITION_DURATION) {
     chapter++;
     chapterElapsed = 0;
     obstacles = [];
+    bgTiles = [];
     gameSpeed = getMinSpeed(chapter);
     loadClustersForChapter(chapter);
     bird.x = CFG.PX;
@@ -613,6 +689,7 @@ function updateRestCountdown(dt) {
     chapter++;
     chapterElapsed = 0;
     obstacles = [];
+    bgTiles = [];
     gameSpeed = getMinSpeed(chapter);
     loadClustersForChapter(chapter);
     bird.x = CFG.PX;
@@ -652,24 +729,48 @@ function winGame() {
 
 // ===== RENDER =====
 function drawBackground(progress) {
+  if (chapter === 1) {
+    for (const tile of bgTiles) {
+      if (tile.x + BG_TILE_W > 0 && tile.x < CFG.GA) {
+        const img = tile.bgImg;
+        if (img && !img._fallback && img.complete && img.naturalWidth > 0) {
+          ctx.drawImage(img, tile.x, 0, BG_TILE_W, BG_TILE_H);
+        } else {
+          const colors = ['#4a90d9', '#5a9fe0', '#6aaff0'];
+          ctx.fillStyle = colors[tile.bgIdx % 3];
+          ctx.fillRect(tile.x, 0, BG_TILE_W, BG_TILE_H);
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 60px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('BG ' + (tile.bgIdx + 1), tile.x + BG_TILE_W / 2, BG_TILE_H / 2);
+        }
+      }
+    }
+    ctx.fillStyle = '#8BC34A';
+    ctx.fillRect(0, CFG.CH - 256, CFG.GA, 256);
+    ctx.fillStyle = '#689F38';
+    ctx.fillRect(0, CFG.CH - 256, CFG.GA, 34);
+    return;
+  }
+
   const dayAlpha = 1 - Math.min(progress, 1);
 
   ctx.fillStyle = '#87CEEB';
   ctx.fillRect(0, 0, CFG.GA, CFG.CH);
 
   ctx.fillStyle = '#8BC34A';
-  ctx.fillRect(0, CFG.CH - 30, CFG.GA, 30);
+  ctx.fillRect(0, CFG.CH - 256, CFG.GA, 256);
   ctx.fillStyle = '#689F38';
-  ctx.fillRect(0, CFG.CH - 30, CFG.GA, 4);
+  ctx.fillRect(0, CFG.CH - 256, CFG.GA, 34);
 
   for (let i = 0; i < 4; i++) {
-    const cx = ((i * 300 + Date.now() * 0.02 * (1 + i * 0.2)) % (CFG.GA + 200)) - 100;
-    const cy = 40 + i * 30;
+    const cx = ((i * 2560 + Date.now() * 0.17 * (1 + i * 0.2)) % (CFG.GA + 1706)) - 854;
+    const cy = 342 + i * 256;
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.beginPath();
-    ctx.arc(cx, cy, 20 + i * 5, 0, Math.PI * 2);
-    ctx.arc(cx + 25, cy - 5, 16 + i * 4, 0, Math.PI * 2);
-    ctx.arc(cx + 50, cy, 18 + i * 4, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 170 + i * 42, 0, Math.PI * 2);
+    ctx.arc(cx + 214, cy - 42, 136 + i * 34, 0, Math.PI * 2);
+    ctx.arc(cx + 426, cy, 154 + i * 34, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -687,10 +788,10 @@ function drawObstacles() {
       ctx.fillStyle = 'hsl(' + hue + ', 70%, 50%)';
       ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
       ctx.strokeStyle = '#333';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 18;
       ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
       ctx.fillStyle = '#fff';
-      ctx.font = 'bold 14px monospace';
+      ctx.font = 'bold 120px monospace';
       ctx.textAlign = 'center';
       ctx.fillText('CLUSTER ' + ((cluster ? cluster.idx : 0) + 1), obs.x + obs.w / 2, obs.y + obs.h / 2);
     }
@@ -709,7 +810,7 @@ function drawBird() {
   const name = getCharName();
   const ci = charImages[name];
   if (ci && !ci._fallback && ci.complete && ci.naturalWidth > 0) {
-    const s = 40;
+    const s = 342;
     ctx.drawImage(ci, -s / 2, -s / 2, s, s);
   } else {
     ctx.fillStyle = '#FFD700';
@@ -717,23 +818,23 @@ function drawBird() {
     ctx.arc(0, 0, CFG.BR, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#B8860B';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 18;
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo(CFG.BR - 2, -4);
-    ctx.lineTo(CFG.BR + 10, 0);
-    ctx.lineTo(CFG.BR - 2, 4);
+    ctx.moveTo(CFG.BR - 18, -34);
+    ctx.lineTo(CFG.BR + 86, 0);
+    ctx.lineTo(CFG.BR - 18, 34);
     ctx.closePath();
     ctx.fillStyle = '#FF8C00';
     ctx.fill();
 
     ctx.beginPath();
-    ctx.arc(4, -4, 5, 0, Math.PI * 2);
+    ctx.arc(34, -34, 42, 0, Math.PI * 2);
     ctx.fillStyle = '#fff';
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(6, -3, 3, 0, Math.PI * 2);
+    ctx.arc(52, -26, 26, 0, Math.PI * 2);
     ctx.fillStyle = '#222';
     ctx.fill();
   }
@@ -746,7 +847,7 @@ function drawUIPanel() {
   ctx.fillStyle = 'rgba(30,30,30,0.9)';
   ctx.fillRect(ux, 0, CFG.UP, CFG.CH);
   ctx.strokeStyle = '#555';
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 26;
   ctx.beginPath();
   ctx.moveTo(ux, 0); ctx.lineTo(ux, CFG.CH);
   ctx.stroke();
@@ -756,17 +857,17 @@ function drawCountdown(text, subtext) {
   ctx.fillStyle = 'rgba(0,0,0,0.5)';
   ctx.fillRect(0, 0, CFG.GA, CFG.CH);
   ctx.fillStyle = '#FFD700';
-  ctx.font = 'bold 120px monospace';
+  ctx.font = 'bold 1024px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.shadowColor = '#000';
-  ctx.shadowBlur = 16;
-  ctx.fillText(text, CFG.GA / 2, CFG.CH / 2 - 20);
+  ctx.shadowBlur = 136;
+  ctx.fillText(text, CFG.GA / 2, CFG.CH / 2 - 170);
   ctx.shadowBlur = 0;
   if (subtext) {
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 28px monospace';
-    ctx.fillText(subtext, CFG.GA / 2, CFG.CH / 2 + 50);
+    ctx.font = 'bold 238px monospace';
+    ctx.fillText(subtext, CFG.GA / 2, CFG.CH / 2 + 426);
   }
 }
 
