@@ -1,64 +1,923 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flappy Bird - Hand Tracking</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minecraft Flappy Bird - Hand Tracking</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden}
+#gameContainer{position:relative;width:1600px;height:600px;border-radius:8px;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,0.5);image-rendering:pixelated}
+#gameCanvas{display:block;width:100%;height:100%}
+#uiPanel{position:absolute;top:0;right:0;width:480px;height:600px;background:rgba(30,30,30,0.85);border-left:3px solid #555;z-index:5;display:flex;flex-direction:column;align-items:center;padding:12px;color:#fff;font-family:'Courier New',monospace}
+#logoArea{width:180px;height:180px;margin-top:10px;cursor:pointer;border:3px solid #888;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);position:relative;overflow:hidden}
+#logoArea img{max-width:100%;max-height:100%;image-rendering:pixelated}
+#logoArea .char-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);text-align:center;font-size:13px;padding:3px;color:#FFD700;font-weight:700}
+#cameraFeed{position:absolute;top:0;left:0;width:100%;height:100%;display:none;background:#000}
+#cameraFeed video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#cameraFeed canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+.ui-title{font-size:16px;color:#FFD700;font-weight:700;text-shadow:2px 2px 0 #8B6914;margin:6px 0 3px;letter-spacing:1px;text-align:center}
+.ui-info{font-size:22px;font-weight:700;color:#fff;text-align:center}
+.ui-label{font-size:13px;color:#aaa;text-align:center;margin-top:2px}
+.ui-row{width:100%;display:flex;justify-content:space-between;padding:4px 16px}
+.ui-separator{width:90%;height:1px;background:linear-gradient(90deg,transparent,#555,transparent);margin:6px 0}
+.ui-speed-bar{width:90%;height:8px;background:#333;border-radius:4px;overflow:hidden;margin:3px 0}
+.ui-speed-fill{height:100%;background:linear-gradient(90deg,#4CAF50,#FFEB3B,#f44336);border-radius:4px;transition:width 0.3s}
+#startOverlay{position:absolute;inset:0;background:rgba(0,0,0,0.7);z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#startOverlay h1{font-size:52px;color:#FFD700;text-shadow:3px 3px 0 #8B6914;margin-bottom:4px;letter-spacing:2px;font-family:'Courier New',monospace}
+#startOverlay .subtitle{font-size:18px;color:#ccc;margin-bottom:16px}
+#startOverlay .cal-status{font-size:14px;color:#FFD700;margin-bottom:12px;padding:6px 14px;background:rgba(255,215,0,0.1);border-radius:8px}
+#startOverlay .controls-hint{font-size:13px;color:#999;margin-bottom:16px;text-align:center;line-height:1.6}
+#startOverlay button{background:linear-gradient(180deg,#FFD700,#FFA500);border:none;color:#333;font-size:20px;font-weight:800;padding:14px 48px;border-radius:50px;cursor:pointer;box-shadow:0 6px 20px rgba(255,165,0,0.4);text-transform:uppercase;letter-spacing:1px;margin:4px}
+#startOverlay button:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(255,165,0,0.6)}
+#startOverlay button:active{transform:translateY(0)}
+#gameOverOverlay{position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center}
+#gameOverOverlay h1{font-size:48px;color:#f44336;text-shadow:3px 3px 0 #8B0000;margin-bottom:12px;font-family:'Courier New',monospace}
+#gameOverOverlay .final-info{font-size:22px;color:#fff;margin:6px 0}
+#gameOverOverlay button{background:linear-gradient(180deg,#FFD700,#FFA500);border:none;color:#333;font-size:20px;font-weight:800;padding:14px 48px;border-radius:50px;cursor:pointer;box-shadow:0 6px 20px rgba(255,165,0,0.4);text-transform:uppercase;letter-spacing:1px;margin-top:16px}
+#captureOverlay{position:absolute;top:0;left:0;z-index:10}
+#handDot{position:absolute;width:10px;height:10px;background:#ff0;border-radius:50%;border:2px solid #fff;pointer-events:none;z-index:11;display:none;transform:translate(-50%,-50%)}
+.hand-status{position:absolute;bottom:4px;right:4px;z-index:12;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,0.5);padding:4px 10px;border-radius:12px}
+.hand-status .dot{width:8px;height:8px;border-radius:50%;background:#f44336}
+.hand-status .dot.active{background:#4CAF50;box-shadow:0 0 6px #4CAF50}
+.hand-status .label{color:#fff;font-size:11px;font-weight:600}
+</style>
 </head>
 <body>
-  <div id="gameContainer">
-    <canvas id="gameCanvas"></canvas>
+<div id="gameContainer">
+  <canvas id="gameCanvas"></canvas>
 
-    <div class="webcam-wrapper">
-      <video id="webcam" playsinline></video>
-      <div class="webcam-label">You</div>
-    </div>
-
-    <div id="scoreDisplay">
-      <span id="score">0</span>
-    </div>
-    <div id="highScoreDisplay">
-      Best: <span id="highScore">0</span>
-    </div>
-
-    <div id="startScreen" class="overlay">
-      <div class="overlay-content">
-        <h1 class="title">Flappy Bird</h1>
-        <p class="subtitle">Choose how to play!</p>
-        <div id="calibrationStatus">Loading...</div>
-        <div class="mode-buttons">
-          <button id="cameraBtn" class="mode-btn">&#x1F4F7; Camera Mode</button>
-          <button id="touchBtn" class="mode-btn">&#x1F446; Touch Mode</button>
-        </div>
-        <button id="startBtn" style="display:none">Start Game</button>
+  <div id="uiPanel">
+    <div class="ui-title">CHARACTER</div>
+    <div id="logoArea">
+      <div id="cameraFeed">
+        <video id="webcam" playsinline></video>
+        <canvas id="handOverlay"></canvas>
       </div>
+      <img id="logoImg" src="" alt="logo">
+      <div class="char-label" id="charLabel">default</div>
     </div>
 
-    <div id="gameOverScreen" class="overlay" style="display:none">
-      <div class="overlay-content">
-        <h1 class="title game-over-title">Game Over</h1>
-        <div class="scores">
-          <div class="score-item">
-            <span class="score-label">Score</span>
-            <span class="score-value" id="finalScore">0</span>
-          </div>
-          <div class="score-item">
-            <span class="score-label">Best</span>
-            <span class="score-value" id="finalHighScore">0</span>
-          </div>
-        </div>
-        <button id="restartBtn">Play Again</button>
-      </div>
-    </div>
+    <div class="ui-separator"></div>
+    <div class="ui-row"><span class="ui-label">CHAPTER</span><span class="ui-info" id="uiChapter">1 / 7</span></div>
+    <div class="ui-row"><span class="ui-label">TIME LEFT</span><span class="ui-info" id="uiTimer">15s</span></div>
+    <div class="ui-row"><span class="ui-label">SPEED</span><span class="ui-info" id="uiSpeed">1.0x</span></div>
+    <div class="ui-speed-bar"><div class="ui-speed-fill" id="speedFill" style="width:0%"></div></div>
 
-    <div id="faceIndicator">
-      <span class="dot"></span>
-      <span class="label">Hand Tracking</span>
-    </div>
+    <div class="ui-separator"></div>
+    <div class="ui-title">OBSTACLE CLUSTER</div>
+    <div class="ui-info" id="uiCluster" style="font-size:16px">-</div>
+
+    <div class="ui-separator"></div>
+    <div class="ui-title">SCORE</div>
+    <div class="ui-info" id="uiScore">0</div>
+    <div class="ui-label">BEST: <span id="uiHighScore">0</span></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-  <script src="script.js"></script>
+  <div id="startOverlay">
+    <h1>MINEFLAPPY</h1>
+    <div class="subtitle">Hand Tracking Flappy Bird</div>
+    <div class="cal-status" id="calibrationStatus">Loading camera...</div>
+    <div class="controls-hint">
+      ✋ Open palm to fly upward<br>
+      ⏸ Hold hand still for auto-flap<br>
+      🖱 Click logo to change character
+    </div>
+    <button id="startBtn">▶ START GAME</button>
+  </div>
+
+  <div id="gameOverOverlay">
+    <h1>GAME OVER</h1>
+    <div class="final-info">Chapter: <span id="finalChapter">1</span></div>
+    <div class="final-info">Score: <span id="finalScore">0</span></div>
+    <div class="final-info">Best: <span id="finalHighScore">0</span></div>
+    <button id="restartBtn">PLAY AGAIN</button>
+  </div>
+
+  <div class="hand-status">
+    <span class="dot" id="handDotIndicator"></span>
+    <span class="label" id="handStatusLabel">No Hand</span>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script>
+// ===== CONFIGURATION =====
+const CFG = {
+  CW: 1600, CH: 600,
+  GA: 1120, UP: 480,
+  PX: 150, PY: 300,
+  CHAPTER_COUNT: 7,
+  CHAPTER_DURATION: 15,
+  REST_DURATION: 6,
+  TRANSITION_DURATION: 1.5,
+  COUNTDOWN_DURATION: 3,
+  BASE_MAX_SPEED: 3,
+  SPEED_INCREASE: 1.3,
+  GRAVITY: 0.375,
+  UPWARD: -8.0,
+  BR: 18,
+  MARGIN_TOP: 80,
+  MARGIN_BOTTOM: 80,
+  HAND_VEL_THRESHOLD: 40,
+  STATIONARY_THRESHOLD: 3,
+  STATIONARY_TIMEOUT: 1000,
+  AUTO_FLAP_INTERVAL: 500,
+  MA_FRAMES: 5,
+  CLUSTER_W: 80,
+  CLUSTER_H: 200,
+};
+
+// ===== DOM REFS =====
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = CFG.CW; canvas.height = CFG.CH;
+
+const webcam = document.getElementById('webcam');
+const handCanvas = document.getElementById('handOverlay');
+const hctx = handCanvas.getContext('2d');
+const cameraFeed = document.getElementById('cameraFeed');
+const logoImg = document.getElementById('logoImg');
+const charLabel = document.getElementById('charLabel');
+const logoArea = document.getElementById('logoArea');
+const uiChapter = document.getElementById('uiChapter');
+const uiTimer = document.getElementById('uiTimer');
+const uiSpeed = document.getElementById('uiSpeed');
+const uiCluster = document.getElementById('uiCluster');
+const uiScore = document.getElementById('uiScore');
+const uiHighScore = document.getElementById('uiHighScore');
+const speedFill = document.getElementById('speedFill');
+const calibrationStatus = document.getElementById('calibrationStatus');
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const startOverlay = document.getElementById('startOverlay');
+const gameOverOverlay = document.getElementById('gameOverOverlay');
+const finalChapter = document.getElementById('finalChapter');
+const finalScore = document.getElementById('finalScore');
+const finalHighScore = document.getElementById('finalHighScore');
+const handDotIndicator = document.getElementById('handDotIndicator');
+const handStatusLabel = document.getElementById('handStatusLabel');
+
+// ===== CHARACTERS =====
+const CHARACTERS = ['default', 'steve', 'creeper', 'enderman', 'zombie', 'skeleton', 'pig'];
+let currentCharIdx = 0;
+let charImages = {};
+let logoImages = {};
+
+function getCharName() { return CHARACTERS[currentCharIdx]; }
+
+function loadImages() {
+  for (const name of CHARACTERS) {
+    const ci = new Image();
+    ci.src = 'assets/characters/char_' + name + '.png';
+    ci.onerror = function(){ this._fallback = true; };
+    charImages[name] = ci;
+
+    const li = new Image();
+    li.src = 'assets/logos/logo_' + name + '.png';
+    li.onerror = function(){ this._fallback = true; };
+    logoImages[name] = li;
+  }
+}
+
+function updateCharacterDisplay() {
+  const name = getCharName();
+  charLabel.textContent = name;
+  const li = logoImages[name];
+  if (li && !li._fallback && li.complete && li.naturalWidth > 0) {
+    logoImg.src = li.src;
+  } else {
+    logoImg.src = '';
+  }
+}
+
+function cycleCharacter() {
+  currentCharIdx = (currentCharIdx + 1) % CHARACTERS.length;
+  updateCharacterDisplay();
+}
+
+logoArea.addEventListener('click', cycleCharacter);
+
+// ===== ASSET LOADING =====
+const clusterImages = {};
+
+function loadChapterClusters(chapter) {
+  const key = 'chapter' + chapter;
+  if (!clusterImages[key]) {
+    clusterImages[key] = [];
+    const count = 5;
+    for (let i = 1; i <= count; i++) {
+      const img = new Image();
+      img.src = 'assets/obstacles/' + key + '/cluster' + i + '.png';
+      img._fallback = true;
+      img._idx = i;
+      img.onload = function(){ this._fallback = false; };
+      img.onerror = function(){ this._fallback = true; };
+      clusterImages[key].push(img);
+    }
+  }
+  return clusterImages[key];
+}
+
+const bgDayImg = new Image();
+bgDayImg.src = 'assets/backgrounds/day.png';
+bgDayImg._fallback = true;
+bgDayImg.onload = function(){ this._fallback = false; };
+
+const bgNightImg = new Image();
+bgNightImg.src = 'assets/backgrounds/night.png';
+bgNightImg._fallback = true;
+bgNightImg.onload = function(){ this._fallback = false; };
+
+// ===== HIGH SCORE =====
+let highScore = parseInt(localStorage.getItem('mineflappyHighScore')) || 0;
+uiHighScore.textContent = highScore;
+
+// ===== HAND TRACKING =====
+let handY = 0;
+let handDetected = false;
+let palmOpen = false;
+let rawHandY = 0;
+let handYHistory = [];
+let lastHandY = 0;
+let handVelocity = 0;
+let lastHandMoveTime = Date.now();
+let lastAutoFlapTime = 0;
+let handLandmarks = null;
+
+function updateHandMovingAverage(y) {
+  rawHandY = y;
+  handYHistory.push(y);
+  if (handYHistory.length > CFG.MA_FRAMES) handYHistory.shift();
+  const sum = handYHistory.reduce((a,b)=>a+b, 0);
+  return sum / handYHistory.length;
+}
+
+function calculateHandVelocity() {
+  if (handYHistory.length < 2) return 0;
+  return handYHistory[handYHistory.length-1] - handYHistory[0];
+}
+
+function countExtendedFingers(landmarks) {
+  let count = 0;
+  if (landmarks[8].y < landmarks[6].y) count++;
+  if (landmarks[12].y < landmarks[10].y) count++;
+  if (landmarks[16].y < landmarks[14].y) count++;
+  if (landmarks[20].y < landmarks[18].y) count++;
+  const thumbTip = landmarks[4];
+  const thumbMCP = landmarks[2];
+  const thumbIP = landmarks[3];
+  if (Math.abs(thumbTip.x - thumbMCP.x) > Math.abs(thumbIP.x - thumbMCP.x) * 1.2) count++;
+  return count;
+}
+
+async function initHandTracking() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 240 } }
+    });
+    webcam.srcObject = stream;
+
+    const hands = new Hands({
+      locateFile: (file) => 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/' + file
+    });
+    hands.setOptions({
+      maxNumHands: 1, modelComplexity: 1,
+      minDetectionConfidence: 0.5, minTrackingConfidence: 0.5,
+    });
+
+    hands.onResults((results) => {
+      handCanvas.width = handCanvas.clientWidth || 320;
+      handCanvas.height = handCanvas.clientHeight || 240;
+      hctx.clearRect(0, 0, handCanvas.width, handCanvas.height);
+
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const lm = results.multiHandLandmarks[0];
+        handLandmarks = lm;
+        handDetected = true;
+        const fingerCount = countExtendedFingers(lm);
+        palmOpen = (fingerCount >= 5);
+
+        const wrist = lm[0];
+        handY = updateHandMovingAverage(wrist.y * CFG.CH);
+        handVelocity = calculateHandVelocity();
+
+        const now = Date.now();
+        if (Math.abs(handVelocity) > CFG.STATIONARY_THRESHOLD) {
+          lastHandMoveTime = now;
+        }
+
+        hctx.strokeStyle = '#0f0';
+        hctx.lineWidth = 2;
+        for (const connection of [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]]) {
+          const a = lm[connection[0]]; const b = lm[connection[1]];
+          hctx.beginPath();
+          hctx.moveTo(a.x * handCanvas.width, a.y * handCanvas.height);
+          hctx.lineTo(b.x * handCanvas.width, b.y * handCanvas.height);
+          hctx.stroke();
+        }
+        for (const p of lm) {
+          hctx.fillStyle = '#ff0';
+          hctx.beginPath();
+          hctx.arc(p.x * handCanvas.width, p.y * handCanvas.height, 3, 0, Math.PI*2);
+          hctx.fill();
+        }
+
+        if (palmOpen) {
+          calibrationStatus.textContent = 'Palm open! Ready to play.';
+          handStatusLabel.textContent = 'Palm ▲';
+          handDotIndicator.className = 'dot active';
+        } else {
+          calibrationStatus.textContent = 'Open your palm fully.';
+          handStatusLabel.textContent = 'No Palm ▼';
+          handDotIndicator.className = 'dot';
+        }
+      } else {
+        handDetected = false;
+        palmOpen = false;
+        handLandmarks = null;
+        calibrationStatus.textContent = 'No hand detected.';
+        handStatusLabel.textContent = 'No Hand';
+        handDotIndicator.className = 'dot';
+      }
+    });
+
+    webcam.onloadeddata = () => {
+      webcam.play();
+      cameraFeed.style.display = 'block';
+      calibrationStatus.textContent = 'Camera ready! Click START.';
+    };
+
+    async function detectLoop() {
+      if (webcam.readyState >= 2) {
+        try { await hands.send({ image: webcam }); } catch (e) {}
+      }
+      requestAnimationFrame(detectLoop);
+    }
+    detectLoop();
+  } catch (err) {
+    calibrationStatus.textContent = 'Camera access denied. Tap to play.';
+    console.error('Camera error:', err);
+  }
+}
+
+// ===== GAME STATE =====
+const State = {
+  MENU: 0, PLAYING: 1, CHAPTER_TRANSITION: 2, REST: 3,
+  REST_COUNTDOWN: 4, GAME_OVER: 5, WIN: 6, STARTING: 7
+};
+let state = State.MENU;
+let chapter = 1;
+let chapterElapsed = 0;
+let transElapsed = 0;
+let restElapsed = 0;
+let countdownElapsed = 0;
+let gameSpeed = CFG.BASE_MAX_SPEED;
+let score = 0;
+let bird = { x: CFG.PX, y: CFG.CH / 2, vy: 0 };
+let obstacles = [];
+let currentClusterIdx = 0;
+let shuffledClusters = [];
+let clusterImagesLoaded = false;
+let startCountdown = 3;
+let startCountdownTime = 0;
+
+function getMaxSpeed(chap) {
+  let s = CFG.BASE_MAX_SPEED;
+  for (let i = 2; i <= chap; i++) s *= CFG.SPEED_INCREASE;
+  return s;
+}
+function getMinSpeed(chap) {
+  if (chap <= 1) return CFG.BASE_MAX_SPEED * 0.5;
+  return getMaxSpeed(chap - 1) * 0.5;
+}
+
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function loadClustersForChapter(chap) {
+  const key = 'chapter' + chap;
+  const clusters = clusterImages[key] || [];
+  if (clusters.length === 0) {
+    const count = 5;
+    for (let i = 1; i <= count; i++) {
+      const img = new Image();
+      img.src = 'assets/obstacles/' + key + '/cluster' + i + '.png';
+      img._fallback = true;
+      img._idx = i;
+      img.onload = function(){ this._fallback = false; };
+      clusters.push(img);
+    }
+    clusterImages[key] = clusters;
+  }
+  shuffledClusters = shuffleArray(clusters.map((img, idx) => ({ img, idx })));
+  currentClusterIdx = 0;
+}
+
+function getNextCluster() {
+  if (shuffledClusters.length === 0) return null;
+  const item = shuffledClusters[currentClusterIdx % shuffledClusters.length];
+  currentClusterIdx++;
+  if (currentClusterIdx >= shuffledClusters.length) {
+    shuffledClusters = shuffleArray(shuffledClusters);
+    currentClusterIdx = 0;
+  }
+  return item;
+}
+
+function spawnObstacle() {
+  const cluster = getNextCluster();
+  if (!cluster) return;
+  const safeRange = CFG.CH - CFG.MARGIN_TOP - CFG.MARGIN_BOTTOM - CFG.CLUSTER_H;
+  const y = CFG.MARGIN_TOP + Math.random() * Math.max(0, safeRange);
+  obstacles.push({
+    x: CFG.GA,
+    y: y,
+    w: CFG.CLUSTER_W,
+    h: CFG.CLUSTER_H,
+    cluster: cluster,
+    passed: false
+  });
+}
+
+function resetGame() {
+  chapter = 1;
+  chapterElapsed = 0;
+  transElapsed = 0;
+  restElapsed = 0;
+  countdownElapsed = 0;
+  score = 0;
+  bird = { x: CFG.PX, y: CFG.CH / 2, vy: 0 };
+  obstacles = [];
+  currentClusterIdx = 0;
+  shuffledClusters = [];
+  startCountdown = 3;
+  gameSpeed = getMinSpeed(1);
+  loadClustersForChapter(1);
+  handYHistory = [];
+}
+
+function updateCameraMode(showCamera) {
+  if (showCamera) {
+    cameraFeed.style.display = 'block';
+    logoImg.style.display = 'none';
+  } else {
+    cameraFeed.style.display = 'none';
+    logoImg.style.display = '';
+    updateCharacterDisplay();
+  }
+}
+
+function startGame() {
+  resetGame();
+  state = State.STARTING;
+  startCountdown = 3;
+  startCountdownTime = Date.now();
+  startOverlay.style.display = 'none';
+  gameOverOverlay.style.display = 'none';
+  document.querySelector('#gameOverOverlay h1').textContent = 'GAME OVER';
+  document.querySelector('#gameOverOverlay h1').style.color = '#f44336';
+  updateCameraMode(true);
+}
+
+// ===== UPDATE =====
+function updateStarting() {
+  const elapsed = (Date.now() - startCountdownTime) / 1000;
+  const remaining = 3 - elapsed;
+  startCountdown = Math.ceil(remaining);
+  if (remaining <= 0) {
+    state = State.PLAYING;
+    chapterElapsed = 0;
+    gameSpeed = getMinSpeed(chapter);
+  }
+}
+
+function updatePlaying(dt) {
+  chapterElapsed += dt;
+  const progress = chapterElapsed / CFG.CHAPTER_DURATION;
+  gameSpeed = getMinSpeed(chapter) + (getMaxSpeed(chapter) - getMinSpeed(chapter)) * Math.min(progress, 1);
+
+  const now = Date.now();
+  const handMoving = Math.abs(handVelocity) > CFG.STATIONARY_THRESHOLD;
+
+  if (handDetected && palmOpen && handMoving && handVelocity < -CFG.HAND_VEL_THRESHOLD) {
+    bird.vy = CFG.UPWARD;
+  }
+
+  const stationaryTime = now - lastHandMoveTime;
+  if (handDetected && palmOpen && stationaryTime > CFG.STATIONARY_TIMEOUT) {
+    if (now - lastAutoFlapTime > CFG.AUTO_FLAP_INTERVAL) {
+      bird.vy = CFG.UPWARD * 0.7;
+      lastAutoFlapTime = now;
+    }
+  }
+
+  bird.vy += CFG.GRAVITY;
+  bird.y += bird.vy;
+
+  const lastX = obstacles.length > 0 ? obstacles[obstacles.length - 1].x : CFG.GA;
+  if (lastX < CFG.GA - 300) {
+    spawnObstacle();
+  }
+
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    obstacles[i].x -= gameSpeed;
+    if (!obstacles[i].passed && obstacles[i].x + obstacles[i].w < bird.x) {
+      obstacles[i].passed = true;
+      score++;
+      uiScore.textContent = score;
+    }
+    if (obstacles[i].x + obstacles[i].w < 0) {
+      obstacles.splice(i, 1);
+    }
+  }
+
+  // collision
+  for (const obs of obstacles) {
+    const cx = bird.x, cy = bird.y, cr = CFG.BR;
+    const rx = obs.x, ry = obs.y, rw = obs.w, rh = obs.h;
+    const nx = Math.max(rx, Math.min(cx, rx + rw));
+    const ny = Math.max(ry, Math.min(cy, ry + rh));
+    const dx = cx - nx, dy = cy - ny;
+    if (dx * dx + dy * dy < cr * cr) {
+      endGame(); return;
+    }
+  }
+  if (bird.y - CFG.BR < 0 || bird.y + CFG.BR > CFG.CH) {
+    endGame(); return;
+  }
+
+  // chapter end check
+  if (chapterElapsed >= CFG.CHAPTER_DURATION) {
+    if (chapter >= CFG.CHAPTER_COUNT) {
+      winGame(); return;
+    }
+    if (chapter % 2 === 0) {
+      state = State.REST;
+      restElapsed = 0;
+      transElapsed = 0;
+    } else {
+      state = State.CHAPTER_TRANSITION;
+      transElapsed = 0;
+      const angle = Math.random() * Math.PI * 2;
+      bird._vx = Math.cos(angle) * 4;
+      bird._vy = Math.sin(angle) * 4;
+    }
+  }
+}
+
+function updateTransition(dt) {
+  transElapsed += dt;
+  bird.x += bird._vx || 0;
+  bird.y += bird._vy || 0;
+  bird.x = Math.max(50, Math.min(CFG.GA - 50, bird.x));
+  bird.y = Math.max(30, Math.min(CFG.CH - 30, bird.y));
+
+  if (transElapsed >= CFG.TRANSITION_DURATION) {
+    chapter++;
+    chapterElapsed = 0;
+    obstacles = [];
+    gameSpeed = getMinSpeed(chapter);
+    loadClustersForChapter(chapter);
+    bird.x = CFG.PX;
+    bird.y = CFG.CH / 2;
+    bird.vy = 0;
+    state = State.PLAYING;
+  }
+}
+
+function updateRest(dt) {
+  restElapsed += dt;
+  bird.vy *= 0.95;
+  bird.y += bird.vy * 0.5;
+
+  if (restElapsed >= CFG.REST_DURATION - CFG.COUNTDOWN_DURATION) {
+    state = State.REST_COUNTDOWN;
+    countdownElapsed = 0;
+  }
+}
+
+function updateRestCountdown(dt) {
+  restElapsed += dt;
+  countdownElapsed += dt;
+  bird.vy *= 0.95;
+  bird.y += bird.vy * 0.5;
+
+  if (restElapsed >= CFG.REST_DURATION) {
+    chapter++;
+    chapterElapsed = 0;
+    obstacles = [];
+    gameSpeed = getMinSpeed(chapter);
+    loadClustersForChapter(chapter);
+    bird.x = CFG.PX;
+    bird.y = CFG.CH / 2;
+    bird.vy = 0;
+    state = State.PLAYING;
+  }
+}
+
+function endGame() {
+  state = State.GAME_OVER;
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('mineflappyHighScore', highScore);
+    uiHighScore.textContent = highScore;
+  }
+  finalChapter.textContent = chapter;
+  finalScore.textContent = score;
+  finalHighScore.textContent = highScore;
+  gameOverOverlay.style.display = 'flex';
+}
+
+function winGame() {
+  state = State.WIN;
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('mineflappyHighScore', highScore);
+    uiHighScore.textContent = highScore;
+  }
+  finalChapter.textContent = '7 COMPLETE!';
+  finalScore.textContent = score;
+  finalHighScore.textContent = highScore;
+  document.querySelector('#gameOverOverlay h1').textContent = 'YOU WIN!';
+  document.querySelector('#gameOverOverlay h1').style.color = '#FFD700';
+  gameOverOverlay.style.display = 'flex';
+}
+
+// ===== RENDER =====
+function drawBackground(progress) {
+  const dayAlpha = 1 - Math.min(progress, 1);
+
+  ctx.fillStyle = '#87CEEB';
+  ctx.fillRect(0, 0, CFG.GA, CFG.CH);
+
+  ctx.fillStyle = '#8BC34A';
+  ctx.fillRect(0, CFG.CH - 30, CFG.GA, 30);
+  ctx.fillStyle = '#689F38';
+  ctx.fillRect(0, CFG.CH - 30, CFG.GA, 4);
+
+  for (let i = 0; i < 4; i++) {
+    const cx = ((i * 300 + Date.now() * 0.02 * (1 + i * 0.2)) % (CFG.GA + 200)) - 100;
+    const cy = 40 + i * 30;
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 20 + i * 5, 0, Math.PI * 2);
+    ctx.arc(cx + 25, cy - 5, 16 + i * 4, 0, Math.PI * 2);
+    ctx.arc(cx + 50, cy, 18 + i * 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = 'rgba(0,0,30,' + (0.5 * (1 - dayAlpha)) + ')';
+  ctx.fillRect(0, 0, CFG.GA, CFG.CH);
+}
+
+function drawObstacles() {
+  for (const obs of obstacles) {
+    const cluster = obs.cluster;
+    if (cluster && cluster.img && !cluster.img._fallback && cluster.img.complete && cluster.img.naturalWidth > 0) {
+      ctx.drawImage(cluster.img, obs.x, obs.y, obs.w, obs.h);
+    } else {
+      const hue = (cluster ? cluster.idx * 40 : 0) % 360;
+      ctx.fillStyle = 'hsl(' + hue + ', 70%, 50%)';
+      ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 14px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('CLUSTER ' + ((cluster ? cluster.idx : 0) + 1), obs.x + obs.w / 2, obs.y + obs.h / 2);
+    }
+  }
+}
+
+function drawBird() {
+  const bx = bird.x;
+  const by = bird.y;
+  const tilt = Math.max(-0.5, Math.min(0.5, bird.vy * 0.03));
+
+  ctx.save();
+  ctx.translate(bx, by);
+  ctx.rotate(tilt);
+
+  const name = getCharName();
+  const ci = charImages[name];
+  if (ci && !ci._fallback && ci.complete && ci.naturalWidth > 0) {
+    const s = 40;
+    ctx.drawImage(ci, -s / 2, -s / 2, s, s);
+  } else {
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(0, 0, CFG.BR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#B8860B';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(CFG.BR - 2, -4);
+    ctx.lineTo(CFG.BR + 10, 0);
+    ctx.lineTo(CFG.BR - 2, 4);
+    ctx.closePath();
+    ctx.fillStyle = '#FF8C00';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(4, -4, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(6, -3, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#222';
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function drawUIPanel() {
+  const ux = CFG.GA;
+  ctx.fillStyle = 'rgba(30,30,30,0.9)';
+  ctx.fillRect(ux, 0, CFG.UP, CFG.CH);
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(ux, 0); ctx.lineTo(ux, CFG.CH);
+  ctx.stroke();
+}
+
+function drawCountdown(text, subtext) {
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(0, 0, CFG.GA, CFG.CH);
+  ctx.fillStyle = '#FFD700';
+  ctx.font = 'bold 120px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 16;
+  ctx.fillText(text, CFG.GA / 2, CFG.CH / 2 - 20);
+  ctx.shadowBlur = 0;
+  if (subtext) {
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 28px monospace';
+    ctx.fillText(subtext, CFG.GA / 2, CFG.CH / 2 + 50);
+  }
+}
+
+function render() {
+  ctx.clearRect(0, 0, CFG.CW, CFG.CH);
+  gameRenderTick();
+
+  drawBackground(chapterElapsed / 20);
+
+  if (state === State.MENU || state === State.STARTING) {
+    if (state === State.STARTING) {
+      drawCountdown(String(startCountdown > 0 ? startCountdown : 'GO!'),
+        startCountdown > 0 ? 'Get ready...' : '');
+    }
+    drawUIPanel();
+    updateUI();
+    return;
+  }
+
+  if (state === State.GAME_OVER || state === State.WIN) {
+    drawObstacles();
+    drawBird();
+    drawUIPanel();
+    updateUI();
+    return;
+  }
+
+  drawObstacles();
+  drawBird();
+
+  if (state === State.CHAPTER_TRANSITION) {
+    const t = transElapsed / CFG.TRANSITION_DURATION;
+    drawCountdown(
+      'TRANSITION',
+      'Chapter ' + (chapter + 1) + ' incoming...'
+    );
+    drawUIPanel();
+    updateUI();
+    return;
+  }
+
+  if (state === State.REST) {
+    drawCountdown('REST', 'Steady flight...');
+    drawUIPanel();
+    updateUI();
+    return;
+  }
+
+  if (state === State.REST_COUNTDOWN) {
+    const remaining = Math.ceil(CFG.COUNTDOWN_DURATION - countdownElapsed);
+    const txt = remaining > 0 ? String(remaining) : 'GO!';
+    drawCountdown(txt, 'Chapter ' + (chapter + 1));
+    drawUIPanel();
+    updateUI();
+    return;
+  }
+
+  drawUIPanel();
+  updateUI();
+}
+
+let lastFrameTime = 0;
+function updateUI() {
+  uiChapter.textContent = chapter + ' / ' + CFG.CHAPTER_COUNT;
+  if (state === State.PLAYING) {
+    const remaining = Math.max(0, CFG.CHAPTER_DURATION - chapterElapsed);
+    uiTimer.textContent = Math.ceil(remaining) + 's';
+  } else if (state === State.REST || state === State.REST_COUNTDOWN) {
+    const remaining = Math.max(0, CFG.REST_DURATION - restElapsed);
+    uiTimer.textContent = 'REST ' + Math.ceil(remaining) + 's';
+  } else if (state === State.CHAPTER_TRANSITION) {
+    uiTimer.textContent = '▶ ' + Math.ceil(CFG.TRANSITION_DURATION - transElapsed) + 's';
+  } else {
+    uiTimer.textContent = '--';
+  }
+  const currentMax = getMaxSpeed(chapter);
+  const speedRatio = gameSpeed / currentMax;
+  uiSpeed.textContent = gameSpeed.toFixed(1) + 'x';
+  speedFill.style.width = Math.min(100, speedRatio * 100) + '%';
+
+  if (obstacles.length > 0) {
+    const last = obstacles[obstacles.length - 1];
+    if (last.cluster) {
+      uiCluster.textContent = '#' + ((last.cluster.idx || 0) + 1);
+    } else {
+      uiCluster.textContent = obstacles.length + ' active';
+    }
+  } else {
+    uiCluster.textContent = '-';
+  }
+  uiScore.textContent = score;
+}
+
+function gameLoop(timestamp) {
+  const dt = lastFrameTime ? Math.min((timestamp - lastFrameTime) / 1000, 0.05) : 1/60;
+  lastFrameTime = timestamp;
+
+  if (state === State.STARTING) updateStarting();
+  else if (state === State.PLAYING) updatePlaying(dt);
+  else if (state === State.CHAPTER_TRANSITION) updateTransition(dt);
+  else if (state === State.REST) updateRest(dt);
+  else if (state === State.REST_COUNTDOWN) updateRestCountdown(dt);
+
+  render();
+  requestAnimationFrame(gameLoop);
+}
+
+// ===== EVENTS =====
+startBtn.addEventListener('click', startGame);
+restartBtn.addEventListener('click', startGame);
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') {
+    e.preventDefault();
+    if (state === State.PLAYING) {
+      bird.vy = CFG.UPWARD;
+    } else if (state === State.GAME_OVER || state === State.WIN) {
+      startGame();
+    } else if (state === State.MENU) {
+      startGame();
+    }
+  }
+});
+
+canvas.addEventListener('click', () => {
+  if (state === State.PLAYING) {
+    bird.vy = CFG.UPWARD;
+  } else if (state === State.GAME_OVER || state === State.WIN) {
+    startGame();
+  } else if (state === State.MENU) {
+    startGame();
+  }
+});
+
+// ===== RENDER LOOP EXTRA =====
+function gameRenderTick() {
+  if (state === State.MENU || state === State.STARTING) {
+    updateCameraMode(false);
+  } else if (state !== State.GAME_OVER && state !== State.WIN) {
+    updateCameraMode(true);
+  }
+}
+
+// ===== INIT =====
+loadImages();
+updateCharacterDisplay();
+initHandTracking();
+state = State.MENU;
+uiHighScore.textContent = highScore;
+updateCameraMode(false);
+requestAnimationFrame(gameLoop);
+</script>
 </body>
 </html>
