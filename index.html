@@ -126,6 +126,7 @@ const CFG = {
   MA_FRAMES: 5,
   CLUSTER_W: 192,
   CLUSTER_H: 480,
+  GROUND_H: 120,
 };
 
 // ===== DOM REFS =====
@@ -247,7 +248,8 @@ ch1ObImg.onload = function(){ this._fallback = false; };
 const BG_TILE_W = 1024;
 const BG_TILE_H = CFG.CH;
 const CH1_OB_W = 300;
-const CH1_OB_H = 400;
+const CH1_OB_H = 900;
+const CH1_GAP_H = 240;
 let bgTiles = [];
 
 // ===== HIGH SCORE =====
@@ -567,11 +569,14 @@ function updatePlaying(dt) {
     for (const tile of bgTiles) {
       if (tile.hasOb && !tile.obAdded && tile.x + BG_TILE_W < CFG.GA && tile.x + BG_TILE_W > 0) {
         const ox = tile.x + BG_TILE_W - CH1_OB_W;
+        const gapY = Math.max(60, Math.random() * (CH1_OB_H - CH1_GAP_H - 120) + 60);
         obstacles.push({
           x: ox,
           y: CFG.CH - CH1_OB_H,
           w: CH1_OB_W,
           h: CH1_OB_H,
+          gapY: gapY,
+          gapH: CH1_GAP_H,
           cluster: { img: ch1ObImg, idx: 0 },
           passed: false,
         });
@@ -614,17 +619,25 @@ function updatePlaying(dt) {
   }
 
   // collision
+  const GRND = CFG.CH - CFG.GROUND_H;
   for (const obs of obstacles) {
     const cx = bird.x, cy = bird.y, cr = CFG.BR;
-    const rx = obs.x, ry = obs.y, rw = obs.w, rh = obs.h;
-    const nx = Math.max(rx, Math.min(cx, rx + rw));
-    const ny = Math.max(ry, Math.min(cy, ry + rh));
-    const dx = cx - nx, dy = cy - ny;
-    if (dx * dx + dy * dy < cr * cr) {
-      endGame(); return;
+    if (obs.gapY !== undefined) {
+      const tp = { x: obs.x, y: obs.y, w: obs.w, h: obs.gapY };
+      const bp = { x: obs.x, y: obs.y + obs.gapY + obs.gapH, w: obs.w, h: obs.h - obs.gapY - obs.gapH };
+      for (const r of [tp, bp]) {
+        const nx = Math.max(r.x, Math.min(cx, r.x + r.w));
+        const ny = Math.max(r.y, Math.min(cy, r.y + r.h));
+        if ((cx - nx) * (cx - nx) + (cy - ny) * (cy - ny) < cr * cr) { endGame(); return; }
+      }
+    } else {
+      const rx = obs.x, ry = obs.y, rw = obs.w, rh = obs.h;
+      const nx = Math.max(rx, Math.min(cx, rx + rw));
+      const ny = Math.max(ry, Math.min(cy, ry + rh));
+      if ((cx - nx) * (cx - nx) + (cy - ny) * (cy - ny) < cr * cr) { endGame(); return; }
     }
   }
-  if (bird.y - CFG.BR < 0 || bird.y + CFG.BR > CFG.CH) {
+  if (bird.y - CFG.BR < 0 || bird.y + CFG.BR > GRND) {
     endGame(); return;
   }
 
@@ -729,6 +742,7 @@ function winGame() {
 
 // ===== RENDER =====
 function drawBackground(progress) {
+  const GRND = CFG.CH - CFG.GROUND_H;
   if (chapter === 1) {
     for (const tile of bgTiles) {
       if (tile.x + BG_TILE_W > 0 && tile.x < CFG.GA) {
@@ -736,64 +750,67 @@ function drawBackground(progress) {
         if (img && !img._fallback && img.complete && img.naturalWidth > 0) {
           ctx.drawImage(img, tile.x, 0, BG_TILE_W, BG_TILE_H);
         } else {
-          const colors = ['#4a90d9', '#5a9fe0', '#6aaff0'];
-          ctx.fillStyle = colors[tile.bgIdx % 3];
-          ctx.fillRect(tile.x, 0, BG_TILE_W, BG_TILE_H);
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 34px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText('BG ' + (tile.bgIdx + 1), tile.x + BG_TILE_W / 2, BG_TILE_H / 2);
+          ctx.fillStyle = '#87CEEB';
+          ctx.fillRect(tile.x, 0, BG_TILE_W, GRND);
         }
       }
     }
-    ctx.fillStyle = '#8BC34A';
-    ctx.fillRect(0, CFG.CH - 72, CFG.GA, 72);
-    ctx.fillStyle = '#689F38';
-    ctx.fillRect(0, CFG.CH - 72, CFG.GA, 10);
-    return;
+  } else {
+    const dayAlpha = 1 - Math.min(progress, 1);
+    ctx.fillStyle = '#87CEEB';
+    ctx.fillRect(0, 0, CFG.GA, GRND);
+    ctx.fillStyle = 'rgba(0,0,30,' + (0.5 * (1 - dayAlpha)) + ')';
+    ctx.fillRect(0, 0, CFG.GA, GRND);
   }
-
-  const dayAlpha = 1 - Math.min(progress, 1);
-
-  ctx.fillStyle = '#87CEEB';
-  ctx.fillRect(0, 0, CFG.GA, CFG.CH);
-
-  ctx.fillStyle = '#8BC34A';
-  ctx.fillRect(0, CFG.CH - 72, CFG.GA, 72);
-  ctx.fillStyle = '#689F38';
-  ctx.fillRect(0, CFG.CH - 72, CFG.GA, 10);
-
-  for (let i = 0; i < 4; i++) {
-    const cx = ((i * 720 + Date.now() * 0.048 * (1 + i * 0.2)) % (CFG.GA + 480)) - 240;
-    const cy = 96 + i * 72;
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.beginPath();
-    ctx.arc(cx, cy, 48 + i * 12, 0, Math.PI * 2);
-    ctx.arc(cx + 60, cy - 12, 38 + i * 10, 0, Math.PI * 2);
-    ctx.arc(cx + 120, cy, 43 + i * 10, 0, Math.PI * 2);
-    ctx.fill();
+  ctx.fillStyle = '#5B8731';
+  ctx.fillRect(0, GRND, CFG.GA, 8);
+  ctx.fillStyle = '#8B5E3C';
+  ctx.fillRect(0, GRND + 8, CFG.GA, CFG.GROUND_H - 8);
+  ctx.fillStyle = '#6B4E2C';
+  ctx.fillRect(0, GRND + 8, CFG.GA, 2);
+  for (let x = 0; x < CFG.GA; x += 60) {
+    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    ctx.fillRect(x, GRND + 8, 1, CFG.GROUND_H - 8);
   }
-
-  ctx.fillStyle = 'rgba(0,0,30,' + (0.5 * (1 - dayAlpha)) + ')';
-  ctx.fillRect(0, 0, CFG.GA, CFG.CH);
 }
 
 function drawObstacles() {
   for (const obs of obstacles) {
     const cluster = obs.cluster;
-    if (cluster && cluster.img && !cluster.img._fallback && cluster.img.complete && cluster.img.naturalWidth > 0) {
-      ctx.drawImage(cluster.img, obs.x, obs.y, obs.w, obs.h);
+    if (obs.gapY !== undefined) {
+      const tp = { x: obs.x, y: obs.y, w: obs.w, h: obs.gapY };
+      const bp = { x: obs.x, y: obs.y + obs.gapY + obs.gapH, w: obs.w, h: obs.h - obs.gapY - obs.gapH };
+      for (const r of [tp, bp]) {
+        if (r.h <= 0) continue;
+        if (cluster && cluster.img && !cluster.img._fallback && cluster.img.complete && cluster.img.naturalWidth > 0) {
+          const sy = r === tp ? 0 : obs.gapY + obs.gapH;
+          const sh = r === tp ? obs.gapY : obs.h - obs.gapY - obs.gapH;
+          ctx.drawImage(cluster.img, 0, sy, obs.w, sh, r.x, r.y, r.w, r.h);
+        } else {
+          ctx.fillStyle = '#8B5E3C';
+          ctx.fillRect(r.x, r.y, r.w, r.h);
+          ctx.fillStyle = '#5B8731';
+          ctx.fillRect(r.x, r.y, r.w, 12);
+          ctx.strokeStyle = '#333';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(r.x, r.y, r.w, r.h);
+        }
+      }
     } else {
-      const hue = (cluster ? cluster.idx * 40 : 0) % 360;
-      ctx.fillStyle = 'hsl(' + hue + ', 70%, 50%)';
-      ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-      ctx.strokeStyle = '#333';
-      ctx.lineWidth = 5;
-      ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 34px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('CLUSTER ' + ((cluster ? cluster.idx : 0) + 1), obs.x + obs.w / 2, obs.y + obs.h / 2);
+      if (cluster && cluster.img && !cluster.img._fallback && cluster.img.complete && cluster.img.naturalWidth > 0) {
+        ctx.drawImage(cluster.img, obs.x, obs.y, obs.w, obs.h);
+      } else {
+        const hue = (cluster ? cluster.idx * 40 : 0) % 360;
+        ctx.fillStyle = 'hsl(' + hue + ', 70%, 50%)';
+        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 5;
+        ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 34px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLUSTER ' + ((cluster ? cluster.idx : 0) + 1), obs.x + obs.w / 2, obs.y + obs.h / 2);
+      }
     }
   }
 }
