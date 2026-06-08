@@ -247,12 +247,9 @@ ch1ObImg.onload = function(){ this._fallback = false; };
 
 const BG_TILE_W = 1024;
 const BG_TILE_H = CFG.CH;
-const CH1_OB_NAT_W = 819;
-const CH1_OB_NAT_H = 1287;
-const CH1_OB_NAT_GAP_Y = 819;
-const CH1_OB_NAT_GAP_H = 117;
 const CH1_OB_W = 300;
-const CH1_OB_H = CH1_OB_NAT_H;
+const CH1_OB_H = 900;
+const CH1_GAP_H = 150;
 let bgTiles = [];
 
 // ===== HIGH SCORE =====
@@ -571,16 +568,15 @@ function updatePlaying(dt) {
     }
     for (const tile of bgTiles) {
       if (tile.hasOb && !tile.obAdded && tile.x + BG_TILE_W < CFG.GA && tile.x + BG_TILE_W > 0) {
-        const ox = tile.x + BG_TILE_W - CH1_OB_W;
-        const gapY = Math.round(CH1_OB_NAT_GAP_Y * CH1_OB_H / CH1_OB_NAT_H);
-        const gapH = Math.round(CH1_OB_NAT_GAP_H * CH1_OB_H / CH1_OB_NAT_H);
+        const ox = tile.x + BG_TILE_W - Math.random() * (CH1_OB_W + BG_TILE_W * 0.3);
+        const gapY = 80 + Math.random() * (CH1_OB_H - CH1_GAP_H - 160);
         obstacles.push({
           x: ox,
           y: CFG.CH - CH1_OB_H,
           w: CH1_OB_W,
           h: CH1_OB_H,
           gapY: gapY,
-          gapH: gapH,
+          gapH: CH1_GAP_H,
           cluster: { img: ch1ObImg, idx: 0 },
           passed: false,
         });
@@ -786,7 +782,14 @@ function drawObstacles() {
       const bp = { x: obs.x, y: obs.y + obs.gapY + obs.gapH, w: obs.w, h: obs.h - obs.gapY - obs.gapH };
       const imgOk = cluster && cluster.img && !cluster.img._fallback && cluster.img.complete && cluster.img.naturalWidth > 0;
       if (imgOk) {
-        ctx.drawImage(cluster.img, obs.x, obs.y, obs.w, obs.h);
+        const iw = cluster.img.naturalWidth, ih = cluster.img.naturalHeight;
+        const topSrcH = Math.round(tp.h * ih / obs.h);
+        const bottomSrcY = Math.round((tp.h + obs.gapH) * ih / obs.h);
+        const bottomSrcH = ih - bottomSrcY;
+        ctx.drawImage(cluster.img, 0, 0, iw, topSrcH, tp.x, tp.y, tp.w, tp.h);
+        if (bottomSrcH > 0) {
+          ctx.drawImage(cluster.img, 0, bottomSrcY, iw, bottomSrcH, bp.x, bp.y, bp.w, bp.h);
+        }
       } else {
         for (const r of [tp, bp]) {
           if (r.h <= 0) continue;
